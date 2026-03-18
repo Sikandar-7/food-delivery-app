@@ -204,9 +204,9 @@ export default function Navbar() {
                 className="hidden md:flex items-center gap-2 bg-navy text-white px-4 py-2 rounded-pill hover:bg-navy/90 transition font-medium"
               >
                 <div className="w-7 h-7 bg-primary rounded-full flex items-center justify-center font-bold text-sm">
-                  {user?.avatar}
+                  {user?.profilePhoto}
                 </div>
-                <span className="max-w-[80px] truncate">{user?.name}</span>
+                <span className="max-w-[80px] truncate">{user?.fullName}</span>
                 <ChevronDown size={16} />
               </button>
 
@@ -220,7 +220,7 @@ export default function Navbar() {
                     className="absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[200]"
                   >
                     <div className="p-4 border-b border-gray-100">
-                      <p className="font-bold text-navy">{user?.name}</p>
+                      <p className="font-bold text-navy">{user?.fullName}</p>
                       <p className="text-xs text-gray-500 truncate">{user?.email}</p>
                     </div>
                     <Link
@@ -294,7 +294,7 @@ export default function Navbar() {
                 {isLoggedIn ? (
                   <div className="flex items-center justify-between px-4 py-2">
                     <div>
-                      <p className="font-bold text-navy">{user?.name}</p>
+                      <p className="font-bold text-navy">{user?.fullName}</p>
                       <p className="text-xs text-gray-500">{user?.email}</p>
                     </div>
                     <button onClick={logout} className="text-error font-medium text-sm flex items-center gap-1">
