@@ -151,7 +151,7 @@ export function AuthModal() {
         </p>
 
         <p className="text-center text-xs text-gray-400">
-          Demo: use any email and password to login
+          Demo Customer: customer@test.com / Test@123
         </p>
       </form>
     </div>
