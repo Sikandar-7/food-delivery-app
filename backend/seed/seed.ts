@@ -125,6 +125,8 @@ async function main() {
       categoryId: mcdBurgers.id,
       name: 'Big Mac',
       description: 'Two 100% beef patties with special sauce, lettuce, cheese, pickles, onions on a sesame seed bun.',
+      imageUrl: 'https://www.mcdonalds.com.pk/wp-content/uploads/2022/03/Big-Mac.png',
+      basePrice: 650,
       calories: 563,
       isAvailable: true,
       sizes: { create: [
@@ -140,6 +142,8 @@ async function main() {
       categoryId: mcdBurgers.id,
       name: 'McChicken Deluxe',
       description: 'Crispy chicken fillet with lettuce, mayo on a toasted bun.',
+      imageUrl: 'https://www.mcdonalds.com.pk/wp-content/uploads/2022/03/McChicken-Deluxe.png',
+      basePrice: 550,
       calories: 490,
       sizes: { create: [
         { sizeName: 'Regular', price: 550 },
@@ -151,9 +155,26 @@ async function main() {
   await prisma.menuItem.create({
     data: {
       restaurantId: mcdonalds.id,
+      categoryId: mcdBurgers.id,
+      name: 'Quarter Pounder',
+      description: 'Quarter pound of 100% beef patty with cheese, pickles, onions, ketchup and mustard.',
+      imageUrl: 'https://www.mcdonalds.com.pk/wp-content/uploads/2022/03/Quarter-Pounder.png',
+      basePrice: 720,
+      sizes: { create: [
+        { sizeName: 'Regular', price: 720 },
+        { sizeName: 'Large Meal', price: 1020 },
+      ]},
+    },
+  });
+
+  await prisma.menuItem.create({
+    data: {
+      restaurantId: mcdonalds.id,
       categoryId: mcdChicken.id,
       name: 'McNuggets',
       description: 'Crispy golden chicken nuggets. Choose your dipping sauce.',
+      imageUrl: 'https://www.mcdonalds.com.pk/wp-content/uploads/2022/03/Chicken-McNuggets.png',
+      basePrice: 350,
       sizes: { create: [
         { sizeName: '6 Piece', price: 350 },
         { sizeName: '9 Piece', price: 500 },
@@ -165,13 +186,43 @@ async function main() {
   await prisma.menuItem.create({
     data: {
       restaurantId: mcdonalds.id,
+      categoryId: mcdChicken.id,
+      name: 'McSpicy Chicken Burger',
+      description: 'Our spiciest chicken sandwich, with a crispy, juicy fillet and fiery seasoning.',
+      imageUrl: 'https://www.mcdonalds.com.pk/wp-content/uploads/2023/01/McSpicy.png',
+      basePrice: 620,
+      sizes: { create: [
+        { sizeName: 'Burger Only', price: 620 },
+        { sizeName: 'Meal', price: 920 },
+      ]},
+    },
+  });
+
+  await prisma.menuItem.create({
+    data: {
+      restaurantId: mcdonalds.id,
       categoryId: mcdDrinks.id,
       name: 'Coca-Cola',
       description: 'Ice cold Coca-Cola.',
+      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Coca-Cola_logo.svg/1200px-Coca-Cola_logo.svg.png',
+      basePrice: 100,
       sizes: { create: [
         { sizeName: 'Small', price: 100 },
         { sizeName: 'Medium', price: 130 },
         { sizeName: 'Large', price: 160 },
+      ]},
+    },
+  });
+
+  await prisma.menuItem.create({
+    data: {
+      restaurantId: mcdonalds.id,
+      categoryId: mcdDrinks.id,
+      name: 'McFlurry - Oreo',
+      description: 'Creamy soft serve blended with Oreo cookie crumbles.',
+      basePrice: 290,
+      sizes: { create: [
+        { sizeName: 'Regular', price: 290 },
       ]},
     },
   });
@@ -183,6 +234,9 @@ async function main() {
   const kfcBurgers = await prisma.menuCategory.create({
     data: { restaurantId: kfc.id, name: 'Burgers', displayOrder: 2 },
   });
+  const kfcSides = await prisma.menuCategory.create({
+    data: { restaurantId: kfc.id, name: 'Sides & Drinks', displayOrder: 3 },
+  });
 
   await prisma.menuItem.create({
     data: {
@@ -190,6 +244,8 @@ async function main() {
       categoryId: kfcChicken.id,
       name: 'Original Recipe Chicken',
       description: "Colonel's secret recipe of 11 herbs and spices.",
+      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/KFC_logo.svg/1200px-KFC_logo.svg.png',
+      basePrice: 480,
       sizes: { create: [
         { sizeName: '2 Piece', price: 480 },
         { sizeName: '4 Piece', price: 850 },
@@ -201,12 +257,69 @@ async function main() {
   await prisma.menuItem.create({
     data: {
       restaurantId: kfc.id,
+      categoryId: kfcChicken.id,
+      name: 'Hot & Crispy Chicken',
+      description: 'Extra crispy, extra spicy! Our hot & crispy chicken strips ready in minutes.',
+      basePrice: 520,
+      sizes: { create: [
+        { sizeName: '2 Piece', price: 520 },
+        { sizeName: '4 Piece', price: 920 },
+      ]},
+    },
+  });
+
+  await prisma.menuItem.create({
+    data: {
+      restaurantId: kfc.id,
       categoryId: kfcBurgers.id,
       name: 'Zinger Burger',
       description: "KFC's iconic spicy chicken burger with crispy fillet and creamy mayo.",
+      basePrice: 450,
       sizes: { create: [
         { sizeName: 'Burger Only', price: 450 },
         { sizeName: 'Meal (with fries & drink)', price: 750 },
+      ]},
+    },
+  });
+
+  await prisma.menuItem.create({
+    data: {
+      restaurantId: kfc.id,
+      categoryId: kfcBurgers.id,
+      name: 'Tower Burger',
+      description: 'A towering stack of crispy chicken, cheese, bacon, fresh lettuce and mayo.',
+      basePrice: 690,
+      sizes: { create: [
+        { sizeName: 'Burger Only', price: 690 },
+        { sizeName: 'Meal', price: 990 },
+      ]},
+    },
+  });
+
+  await prisma.menuItem.create({
+    data: {
+      restaurantId: kfc.id,
+      categoryId: kfcSides.id,
+      name: 'Krinkle Cut Fries',
+      description: 'Wavy, crispy golden fries seasoned with our signature salt.',
+      basePrice: 180,
+      sizes: { create: [
+        { sizeName: 'Regular', price: 180 },
+        { sizeName: 'Large', price: 250 },
+      ]},
+    },
+  });
+
+  await prisma.menuItem.create({
+    data: {
+      restaurantId: kfc.id,
+      categoryId: kfcSides.id,
+      name: 'Pepsi',
+      description: 'Ice cold Pepsi to wash it all down.',
+      basePrice: 90,
+      sizes: { create: [
+        { sizeName: 'Medium', price: 90 },
+        { sizeName: 'Large', price: 120 },
       ]},
     },
   });

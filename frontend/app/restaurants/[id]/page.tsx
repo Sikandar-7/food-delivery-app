@@ -32,12 +32,19 @@ function StarRating({ rating, size = 14 }: { rating: number; size?: number }) {
   );
 }
 
+interface MenuItemSize {
+  id: string;
+  sizeName: string;
+  price: number;
+}
+
 interface MenuItem {
   id: string;
   name: string;
   description: string | null;
-  price: number;
+  basePrice: number;
   imageUrl: string | null;
+  sizes: MenuItemSize[];
 }
 
 interface MenuCategory {
@@ -297,29 +304,43 @@ export default function RestaurantDetailPage() {
                                   <p className="text-xs text-gray-500 mt-1 line-clamp-2">{product.description}</p>
                                 )}
 
-                                <div className="flex items-center justify-between mt-3">
-                                  <span className="font-black text-navy text-lg">Rs.{product.price}</span>
-                                  {/* Qty controls */}
-                                  {quantities[product.id] ? (
-                                    <div className="flex items-center gap-2 bg-navy rounded-pill px-2 py-1">
-                                      <button onClick={() => handleRemove(product.id)} className="text-white hover:text-primary transition">
-                                        <Minus size={16} />
+                                {/* Sizes as price buttons */}
+                                {product.sizes && product.sizes.length > 1 ? (
+                                  <div className="flex flex-wrap gap-1.5 mt-3">
+                                    {product.sizes.map((size) => (
+                                      <button
+                                        key={size.id}
+                                        onClick={() => handleAdd({ id: product.id + '-' + size.id, name: `${product.name} (${size.sizeName})`, price: size.price })}
+                                        className="text-xs border-2 border-primary/40 text-navy font-bold px-3 py-1.5 rounded-xl hover:bg-primary hover:text-white hover:border-primary transition"
+                                      >
+                                        {size.sizeName} — <span className="text-primary">Rs.{size.price}</span>
                                       </button>
-                                      <span className="text-white font-bold w-5 text-center">{quantities[product.id]}</span>
-                                      <button onClick={() => handleAdd(product)} className="text-white hover:text-primary transition">
-                                        <Plus size={16} />
-                                      </button>
-                                    </div>
-                                  ) : (
-                                    <motion.button
-                                      whileTap={{ scale: 0.9 }}
-                                      onClick={() => handleAdd(product)}
-                                      className="bg-primary text-white w-9 h-9 rounded-full flex items-center justify-center hover:bg-primary/90 shadow-md"
-                                    >
-                                      <Plus size={18} />
-                                    </motion.button>
-                                  )}
-                                </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center justify-between mt-3">
+                                    <span className="font-black text-navy text-lg">Rs.{product.sizes?.[0]?.price || product.basePrice}</span>
+                                    {quantities[product.id] ? (
+                                      <div className="flex items-center gap-2 bg-navy rounded-pill px-2 py-1">
+                                        <button onClick={() => handleRemove(product.id)} className="text-white hover:text-primary transition">
+                                          <Minus size={16} />
+                                        </button>
+                                        <span className="text-white font-bold w-5 text-center">{quantities[product.id]}</span>
+                                        <button onClick={() => handleAdd({ id: product.id, name: product.name, price: product.sizes?.[0]?.price || product.basePrice })} className="text-white hover:text-primary transition">
+                                          <Plus size={16} />
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <motion.button
+                                        whileTap={{ scale: 0.9 }}
+                                        onClick={() => handleAdd({ id: product.id, name: product.name, price: product.sizes?.[0]?.price || product.basePrice })}
+                                        className="bg-primary text-white w-9 h-9 rounded-full flex items-center justify-center hover:bg-primary/90 shadow-md"
+                                      >
+                                        <Plus size={18} />
+                                      </motion.button>
+                                    )}
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </SlideUp>
@@ -343,7 +364,7 @@ export default function RestaurantDetailPage() {
                         <div key={product.id} className="bg-white rounded-2xl border border-gray-100 p-4 flex gap-3">
                          {product.imageUrl ? (
                            // eslint-disable-next-line @next/next/no-img-element
-                           <img src={product.imageUrl} alt={product.name} className="w-20 h-20 object-cover rounded-xl flex-shrink-0" />
+                           <img src={product.imageUrl} alt={product.name} loading="lazy" className="w-20 h-20 object-cover rounded-xl flex-shrink-0" />
                          ) : (
                            <div className="w-20 h-20 bg-gray-100 rounded-xl flex-shrink-0 flex items-center justify-center text-2xl">🍔</div>
                          )}
@@ -352,13 +373,27 @@ export default function RestaurantDetailPage() {
                             {product.description && (
                               <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{product.description}</p>
                             )}
-                            <div className="flex items-center justify-between mt-2">
-                              <span className="font-black text-navy">Rs.{product.price}</span>
-                              <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleAdd(product)} className="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center">
-                                <Plus size={16} />
-                              </motion.button>
-                            </div>
-                          </div>
+                            {product.sizes && product.sizes.length > 1 ? (
+                               <div className="flex flex-wrap gap-1 mt-2">
+                                 {product.sizes.map((size) => (
+                                   <button
+                                     key={size.id}
+                                     onClick={() => handleAdd({ id: product.id + '-' + size.id, name: `${product.name} (${size.sizeName})`, price: size.price })}
+                                     className="text-xs border border-primary/50 text-navy font-bold px-2 py-1 rounded-lg hover:bg-primary hover:text-white transition"
+                                   >
+                                     {size.sizeName} Rs.{size.price}
+                                   </button>
+                                 ))}
+                               </div>
+                             ) : (
+                               <div className="flex items-center justify-between mt-2">
+                                 <span className="font-black text-navy">Rs.{product.sizes?.[0]?.price || product.basePrice}</span>
+                                 <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleAdd({ id: product.id, name: product.name, price: product.sizes?.[0]?.price || product.basePrice })} className="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center">
+                                   <Plus size={16} />
+                                 </motion.button>
+                               </div>
+                             )}
+                           </div>
                         </div>
                       ))}
                     </div>

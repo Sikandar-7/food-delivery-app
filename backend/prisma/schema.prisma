@@ -161,6 +161,7 @@ model MenuItem {
   name           String
   description    String?
   imageUrl       String?
+  basePrice      Float        @default(0)
   calories       Int?
   allergens      String[]
   isAvailable    Boolean      @default(true)
