@@ -90,7 +90,7 @@ router.get('/my', authMiddleware, async (req: AuthRequest, res: Response) => {
 router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const order = await prisma.order.findUnique({
-      where: { id: req.params.id },
+      where: { id: req.params.id as string },
       include: {
         restaurant: { select: { name: true, logoUrl: true, phone: true } },
         customer: { select: { fullName: true, phone: true } },
@@ -111,7 +111,7 @@ router.put('/:id/status', authMiddleware, roleGuard('RESTAURANT_OWNER', 'SUPER_A
   try {
     const { status } = req.body;
     const order = await prisma.order.update({
-      where: { id: req.params.id },
+      where: { id: req.params.id as string },
       data: {
         status,
         ...(status === 'DELIVERED' ? { deliveredAt: new Date(), paymentStatus: 'PAID' } : {}),

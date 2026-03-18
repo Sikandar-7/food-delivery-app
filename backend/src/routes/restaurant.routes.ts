@@ -43,7 +43,7 @@ router.get('/', async (req: Request, res: Response) => {
 router.get('/:slug', async (req: Request, res: Response) => {
   try {
     const restaurant = await prisma.restaurant.findUnique({
-      where: { slug: req.params.slug },
+      where: { slug: req.params.slug as string },
       include: {
         operatingHours: true,
         menuCategories: {
@@ -75,7 +75,7 @@ router.get('/:slug', async (req: Request, res: Response) => {
 router.get('/:id/reviews', async (req: Request, res: Response) => {
   try {
     const reviews = await prisma.review.findMany({
-      where: { restaurantId: req.params.id },
+      where: { restaurantId: req.params.id as string },
       include: { customer: { select: { fullName: true, profilePhoto: true } } },
       orderBy: { createdAt: 'desc' },
       take: 20,
@@ -91,7 +91,7 @@ router.put('/:id/status', authMiddleware, roleGuard('RESTAURANT_OWNER', 'SUPER_A
   try {
     const { isOpen } = req.body;
     const updated = await prisma.restaurant.update({
-      where: { id: req.params.id },
+      where: { id: req.params.id as string },
       data: { isOpen },
     });
     return res.json({ success: true, data: updated });

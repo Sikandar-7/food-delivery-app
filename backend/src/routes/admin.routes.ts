@@ -101,7 +101,7 @@ router.get('/restaurants', async (_req: Request, res: Response) => {
 router.put('/restaurants/:id/activate', async (req: Request, res: Response) => {
   try {
     const restaurant = await prisma.restaurant.update({
-      where: { id: req.params.id },
+      where: { id: req.params.id as string },
       data: { isActive: true },
     });
     return res.json({ success: true, message: 'Restaurant activated', data: restaurant });
@@ -114,7 +114,7 @@ router.put('/restaurants/:id/activate', async (req: Request, res: Response) => {
 router.put('/restaurants/:id/suspend', async (req: Request, res: Response) => {
   try {
     const restaurant = await prisma.restaurant.update({
-      where: { id: req.params.id },
+      where: { id: req.params.id as string },
       data: { isActive: false },
     });
     return res.json({ success: true, message: 'Restaurant suspended', data: restaurant });
