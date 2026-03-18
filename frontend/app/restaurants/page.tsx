@@ -1,27 +1,60 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Star, Clock, ShoppingBag, ChevronRight, Search, Filter, Flame } from "lucide-react";
-import { restaurants } from "@/lib/data";
+import api from "@/lib/api";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { FadeIn, SlideUp } from "@/components/animations/MotionWrappers";
 
-const cuisineFilters = ["All", "Burgers", "Pizza", "Chicken", "Wraps", "Vegan", "Sushi"];
+const cuisineFilters = ["All", "Burgers", "Pizza", "Chicken", "Wraps", "Dessert", "Pakistani"];
+
+interface ApiRestaurant {
+  id: string;
+  name: string;
+  slug: string;
+  logoUrl: string | null;
+  bannerUrl: string | null;
+  categories: string[];
+  minOrderValue: number;
+  deliveryTimeMins: number;
+  isOpen: boolean;
+  ratingAvg: number;
+  isFeatured: boolean;
+}
 
 export default function RestaurantsPage() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [restaurants, setRestaurants] = useState<ApiRestaurant[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRestaurants = async () => {
+      try {
+        const res = await api.get('/restaurants'); // Assuming public route
+        if (res.data.success) {
+          setRestaurants(res.data.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch restaurants:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRestaurants();
+  }, []);
 
   const filtered = restaurants.filter((r) => {
+    const categoriesStr = r.categories.join(", ").toLowerCase();
     const matchesSearch =
       r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.cuisine.toLowerCase().includes(searchQuery.toLowerCase());
+      categoriesStr.includes(searchQuery.toLowerCase());
     const matchesFilter =
       activeFilter === "All" ||
-      r.cuisine.toLowerCase().includes(activeFilter.toLowerCase());
+      categoriesStr.includes(activeFilter.toLowerCase());
     return matchesSearch && matchesFilter;
   });
 
@@ -92,12 +125,18 @@ export default function RestaurantsPage() {
         <section className="max-w-7xl mx-auto px-4 py-10">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-heading font-bold text-navy">
-              {filtered.length} Restaurant{filtered.length !== 1 ? "s" : ""} near you
+              {loading ? "Loading..." : `${filtered.length} Restaurant${filtered.length !== 1 ? "s" : ""} near you`}
             </h2>
             <p className="text-sm text-gray-500">Sorted by: <span className="font-bold text-navy">Popularity</span></p>
           </div>
 
-          {filtered.length === 0 ? (
+          {loading ? (
+             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+                {[...Array(6)].map((_, i) => (
+                   <div key={i} className="bg-gray-200 rounded-2xl h-72"></div>
+                ))}
+             </div>
+          ) : filtered.length === 0 ? (
             <div className="text-center py-24 text-gray-400">
               <div className="text-6xl mb-4">🍽️</div>
               <p className="text-xl font-bold text-navy">No restaurants found</p>
@@ -107,42 +146,41 @@ export default function RestaurantsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filtered.map((restaurant, idx) => (
                 <SlideUp key={restaurant.id} delay={idx * 0.05}>
-                  <Link href={`/restaurants/${restaurant.id}`}>
+                  <Link href={`/restaurants/${restaurant.slug}`}>
                     <motion.div
                       whileHover={{ y: -4 }}
                       className="bg-white rounded-2xl shadow-card border border-gray-100 overflow-hidden group cursor-pointer"
                     >
                       {/* Cover Image */}
-                      <div className="relative h-44 overflow-hidden">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={restaurant.coverImage}
-                          alt={restaurant.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
+                      <div className="relative h-44 bg-gray-100 overflow-hidden">
+                        {restaurant.bannerUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={restaurant.bannerUrl}
+                            alt={restaurant.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-navy/10 flex items-center justify-center text-navy font-bold">{restaurant.name}</div>
+                        )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 
-                        {/* Discount badge */}
-                        {restaurant.discount && (
-                          <div className="absolute top-3 left-3 bg-primary text-white text-xs font-black px-3 py-1.5 rounded-full flex items-center gap-1">
+                        {/* Featured badge */}
+                        {restaurant.isFeatured && (
+                          <div className="absolute top-3 left-3 bg-primary text-white text-xs font-black px-3 py-1.5 rounded-full flex items-center gap-1 shadow-md">
                             <Flame size={12} />
-                            {restaurant.discount}
-                          </div>
-                        )}
-
-                        {/* Tag */}
-                        {restaurant.tag && (
-                          <div className="absolute top-3 right-3 bg-white text-navy text-xs font-bold px-3 py-1 rounded-pill">
-                            {restaurant.tag}
+                            Featured
                           </div>
                         )}
 
                         {/* Logo */}
-                        <div
-                          className="absolute bottom-3 left-3 w-12 h-12 rounded-xl flex items-center justify-center text-2xl shadow-lg"
-                          style={{ backgroundColor: restaurant.backgroundColor }}
-                        >
-                          {restaurant.logo}
+                        <div className="absolute bottom-3 left-3 w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-lg overflow-hidden border border-gray-100">
+                          {restaurant.logoUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={restaurant.logoUrl} alt="Logo" className="w-full h-full object-contain p-1" />
+                          ) : (
+                            <span className="text-xl font-bold text-navy">{restaurant.name.charAt(0)}</span>
+                          )}
                         </div>
                       </div>
 
@@ -154,19 +192,21 @@ export default function RestaurantsPage() {
                           </h3>
                           <div className="flex items-center gap-1 text-warning flex-shrink-0 bg-warning/10 px-2 py-1 rounded-lg">
                             <Star size={12} fill="currentColor" />
-                            <span className="text-xs font-black text-navy">{restaurant.rating}</span>
+                            <span className="text-xs font-black text-navy">{restaurant.ratingAvg.toFixed(1)}</span>
                           </div>
                         </div>
-                        <p className="text-sm text-gray-500 mt-1">{restaurant.cuisine}</p>
+                        <p className="text-sm text-gray-500 mt-1 truncate">
+                          {restaurant.categories.join(" • ")}
+                        </p>
 
                         <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-100">
                           <div className="flex items-center gap-1.5 text-xs text-gray-600 font-medium">
                             <Clock size={13} className="text-primary" />
-                            {restaurant.deliveryTime}
+                            {restaurant.deliveryTimeMins} mins
                           </div>
                           <div className="flex items-center gap-1.5 text-xs text-gray-600 font-medium">
                             <ShoppingBag size={13} className="text-primary" />
-                            Min Rs.{restaurant.minOrder}
+                            Min Rs.{restaurant.minOrderValue}
                           </div>
                           <div className="flex items-center gap-1.5 text-xs text-gray-600 font-medium ml-auto">
                             <span
@@ -181,7 +221,7 @@ export default function RestaurantsPage() {
 
                       {/* View Menu CTA */}
                       <div className="px-4 pb-4">
-                        <div className="flex items-center justify-center gap-2 bg-navy/5 hover:bg-primary hover:text-white text-navy rounded-xl py-2.5 font-bold text-sm transition-all">
+                        <div className="flex items-center justify-center gap-2 bg-navy/5 group-hover:bg-primary group-hover:text-white text-navy rounded-xl py-2.5 font-bold text-sm transition-all">
                           View Menu <ChevronRight size={16} />
                         </div>
                       </div>

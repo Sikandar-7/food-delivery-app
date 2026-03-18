@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import { Star, Clock, ShoppingBag, ChevronLeft, ChevronRight, Plus, Minus, Truck } from "lucide-react";
-import { restaurants, menuByRestaurant, reviews, deliverySchedule, Restaurant, MenuCategory } from "@/lib/data";
+import api from "@/lib/api";
 import { useCart } from "@/context/CartContext";
 import { useModal } from "@/context/ModalContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -32,14 +32,43 @@ function StarRating({ rating, size = 14 }: { rating: number; size?: number }) {
   );
 }
 
+interface MenuItem {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  imageUrl: string | null;
+}
+
+interface MenuCategory {
+  id: string;
+  name: string;
+  items: MenuItem[];
+}
+
+interface ApiRestaurant {
+  id: string;
+  name: string;
+  slug: string;
+  logoUrl: string | null;
+  bannerUrl: string | null;
+  categories: string[];
+  minOrderValue: number;
+  deliveryTimeMins: number;
+  isOpen: boolean;
+  ratingAvg: number;
+  ratingCount: number;
+  menuCategories: MenuCategory[];
+}
+
 export default function RestaurantDetailPage() {
   const params = useParams();
-  const id = params.id as string;
+  const slug = params.id as string; // in Next.js, the folder is [id] but we passed slug
 
-  const restaurant: Restaurant | undefined = restaurants.find((r) => r.id === id);
-  const menuData: MenuCategory[] = menuByRestaurant[id] || [];
+  const [restaurant, setRestaurant] = useState<ApiRestaurant | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const [activeCategory, setActiveCategory] = useState(menuData[0]?.title || "");
+  const [activeCategory, setActiveCategory] = useState("");
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [deliveryMode, setDeliveryMode] = useState<"delivery" | "collection">("delivery");
   const [coupon, setCoupon] = useState("");
@@ -48,12 +77,61 @@ export default function RestaurantDetailPage() {
   const { state, dispatch } = useCart();
   const { openModal } = useModal();
 
-  const MINIMUM_ORDER = restaurant?.minOrder || 12;
+  useEffect(() => {
+    const fetchRestaurant = async () => {
+      try {
+        const res = await api.get(`/restaurants/${slug}`);
+        if (res.data.success) {
+          setRestaurant(res.data.data);
+          if (res.data.data.menuCategories?.length > 0) {
+            setActiveCategory(res.data.data.menuCategories[0].name);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load restaurant data", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRestaurant();
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Navbar />
+        <div className="flex-grow flex items-center justify-center animate-pulse">
+           <div className="text-center font-bold text-navy">Loading Menu...</div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!restaurant) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Navbar />
+        <div className="flex-grow flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-6xl mb-4">🍽️</p>
+            <h1 className="text-2xl font-heading font-bold text-navy">Restaurant Not Found</h1>
+            <Link href="/restaurants" className="mt-4 inline-block text-primary hover:underline font-medium">
+              ← Back to Restaurants
+            </Link>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  const MINIMUM_ORDER = restaurant.minOrderValue || 500;
   const remaining = Math.max(0, MINIMUM_ORDER - state.subTotal);
 
-  const scrollToCategory = (title: string) => {
-    setActiveCategory(title);
-    const el = categoryRefs.current[title];
+  const scrollToCategory = (name: string) => {
+    setActiveCategory(name);
+    const el = categoryRefs.current[name];
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
@@ -74,36 +152,24 @@ export default function RestaurantDetailPage() {
     }
   };
 
-  if (!restaurant) {
-    return (
-      <div className="min-h-screen flex flex-col bg-background">
-        <Navbar />
-        <div className="flex-grow flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-6xl mb-4">🍽️</p>
-            <h1 className="text-2xl font-heading font-bold text-navy">Restaurant Not Found</h1>
-            <Link href="/restaurants" className="mt-4 inline-block text-primary hover:underline font-medium">
-              ← Back to Restaurants
-            </Link>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
 
       {/* Restaurant Header Banner */}
-      <section className="relative h-72 md:h-96 overflow-hidden">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={restaurant.coverImage} alt={restaurant.name} className="w-full h-full object-cover" />
+      <section className="relative h-72 md:h-96 bg-navy overflow-hidden">
+        {restaurant.bannerUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={restaurant.bannerUrl} alt={restaurant.name} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center opacity-10">
+            <span className="text-9xl font-black">{restaurant.name.charAt(0)}</span>
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
         {/* Breadcrumb */}
-        <div className="absolute top-4 left-4 flex items-center gap-2 text-white/80 text-sm">
+        <div className="absolute top-4 left-4 flex items-center gap-2 text-white/80 text-sm z-10">
           <Link href="/" className="hover:text-white">Home</Link>
           <ChevronRight size={14} />
           <Link href="/restaurants" className="hover:text-white">Restaurants</Link>
@@ -112,31 +178,31 @@ export default function RestaurantDetailPage() {
         </div>
 
         {/* Restaurant Info */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 flex flex-col md:flex-row md:items-end justify-between gap-4 z-10">
           <div>
             <h1 className="text-3xl md:text-5xl font-heading font-black text-white drop-shadow-lg">
               {restaurant.name}
             </h1>
-            <p className="text-white/80 mt-1 font-medium">{restaurant.cuisine}</p>
+            <p className="text-white/80 mt-1 font-medium">{restaurant.categories.join(", ")}</p>
             <div className="flex flex-wrap items-center gap-3 mt-3">
               <div className="bg-white/20 backdrop-blur-sm text-white text-sm font-bold px-4 py-1.5 rounded-pill flex items-center gap-2">
                 <Truck size={14} />
-                Min Order: Rs.{restaurant.minOrder}
+                Min Order: Rs.{restaurant.minOrderValue}
               </div>
               <div className="bg-white/20 backdrop-blur-sm text-white text-sm font-bold px-4 py-1.5 rounded-pill flex items-center gap-2">
                 <Clock size={14} />
-                {restaurant.deliveryTime}
+                {restaurant.deliveryTimeMins} mins
               </div>
-              <div className="bg-success text-white text-sm font-bold px-4 py-1.5 rounded-pill">
-                Open until {restaurant.closeTime}
+              <div className={`${restaurant.isOpen ? 'bg-success' : 'bg-red-500'} text-white text-sm font-bold px-4 py-1.5 rounded-pill`}>
+                {restaurant.isOpen ? 'Open Now' : 'Closed'}
               </div>
             </div>
           </div>
           <div className="flex flex-col items-end">
             <div className="bg-white/20 backdrop-blur-sm rounded-2xl px-5 py-3 text-center">
-              <p className="text-4xl font-black text-white">{restaurant.rating}</p>
-              <StarRating rating={restaurant.rating} />
-              <p className="text-white/70 text-xs mt-1">({restaurant.reviewCount.toLocaleString()} reviews)</p>
+              <p className="text-4xl font-black text-white">{restaurant.ratingAvg.toFixed(1)}</p>
+              <StarRating rating={restaurant.ratingAvg} />
+              <p className="text-white/70 text-xs mt-1">({restaurant.ratingCount.toLocaleString()} reviews)</p>
             </div>
           </div>
         </div>
@@ -152,17 +218,17 @@ export default function RestaurantDetailPage() {
             >
               🔥 Offers
             </button>
-            {menuData.map((cat) => (
+            {restaurant.menuCategories?.map((cat) => (
               <button
-                key={cat.title}
-                onClick={() => scrollToCategory(cat.title)}
+                key={cat.id}
+                onClick={() => scrollToCategory(cat.name)}
                 className={`whitespace-nowrap px-5 py-2 rounded-pill text-sm font-bold transition-all flex-shrink-0 ${
-                  activeCategory === cat.title
+                  activeCategory === cat.name
                     ? "bg-primary text-white shadow-md"
                     : "bg-gray-100 text-navy hover:bg-gray-200"
                 }`}
               >
-                {cat.title}
+                {cat.name}
               </button>
             ))}
           </div>
@@ -181,17 +247,17 @@ export default function RestaurantDetailPage() {
                 <div className="w-44 flex-shrink-0">
                   <div className="bg-white rounded-2xl shadow-card border border-gray-100 p-3 sticky top-24">
                     <p className="font-bold text-xs text-gray-400 uppercase tracking-wider px-3 mb-3">🍽️ Menu</p>
-                    {menuData.map((cat) => (
+                    {restaurant.menuCategories?.map((cat) => (
                       <button
-                        key={cat.title}
-                        onClick={() => scrollToCategory(cat.title)}
+                        key={cat.id}
+                        onClick={() => scrollToCategory(cat.name)}
                         className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                          activeCategory === cat.title
+                          activeCategory === cat.name
                             ? "bg-primary/10 text-primary font-bold"
                             : "text-navy hover:bg-gray-50"
                         }`}
                       >
-                        {cat.title}
+                        {cat.name}
                       </button>
                     ))}
                   </div>
@@ -199,53 +265,40 @@ export default function RestaurantDetailPage() {
 
                 {/* Products */}
                 <div className="flex-1 space-y-10">
-                  {menuData.map((category) => (
+                  {restaurant.menuCategories?.map((category) => (
                     <div
-                      key={category.title}
-                      ref={(el) => { categoryRefs.current[category.title] = el; }}
-                      id={`cat-${category.title}`}
+                      key={category.id}
+                      ref={(el) => { categoryRefs.current[category.name] = el; }}
+                      id={`cat-${category.name}`}
                     >
                       <div className="flex items-center justify-between mb-4">
                         <h2 className="text-xl font-heading font-black text-navy flex items-center gap-2">
-                          <span className={`w-3 h-3 rounded-full ${category.color}`} />
-                          {category.title}
+                          <span className={`w-3 h-3 rounded-full bg-primary/40`} />
+                          {category.name}
                         </h2>
                       </div>
                       <div className="space-y-4">
-                        {category.products.map((product, idx) => (
+                        {category.items.map((product, idx) => (
                           <SlideUp key={product.id} delay={idx * 0.05}>
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow p-4 flex gap-4">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                src={product.image}
-                                alt={product.name}
-                                className="w-28 h-24 object-cover rounded-xl flex-shrink-0"
-                              />
+                              {product.imageUrl ? (
+                                <img
+                                  src={product.imageUrl}
+                                  alt={product.name}
+                                  className="w-28 h-24 object-cover rounded-xl flex-shrink-0"
+                                />
+                              ) : (
+                                <div className="w-28 h-24 bg-gray-100 rounded-xl flex flex-shrink-0 items-center justify-center text-3xl">🍔</div>
+                              )}
                               <div className="flex-1 min-w-0">
                                 <h3 className="font-bold text-navy text-base leading-snug">{product.name}</h3>
-                                <div className="flex items-center gap-1 mt-1">
-                                  <StarRating rating={product.rating || 4.5} size={11} />
-                                  <span className="text-xs text-gray-400">({product.rating || 4.5})</span>
-                                </div>
-                                <p className="text-xs text-gray-500 mt-1 line-clamp-2">{product.description}</p>
-
-                                {/* Sizes */}
-                                {product.sizes && (
-                                  <div className="flex flex-wrap gap-2 mt-2">
-                                    {product.sizes.map((size) => (
-                                      <button
-                                        key={size.label}
-                                        onClick={() => handleAdd({ ...product, price: size.price, name: `${product.name} (${size.label})` })}
-                                        className="text-xs border-2 border-primary text-primary font-bold px-3 py-1 rounded-pill hover:bg-primary hover:text-white transition"
-                                      >
-                                        {size.label} Rs.{size.price.toFixed(2)}
-                                      </button>
-                                    ))}
-                                  </div>
+                                {product.description && (
+                                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">{product.description}</p>
                                 )}
 
                                 <div className="flex items-center justify-between mt-3">
-                                  <span className="font-black text-navy text-lg">Rs.{product.price.toFixed(2)}</span>
+                                  <span className="font-black text-navy text-lg">Rs.{product.price}</span>
                                   {/* Qty controls */}
                                   {quantities[product.id] ? (
                                     <div className="flex items-center gap-2 bg-navy rounded-pill px-2 py-1">
@@ -279,22 +332,28 @@ export default function RestaurantDetailPage() {
 
               {/* Mobile: No sidebar, just products */}
               <div className="lg:hidden space-y-8">
-                {menuData.map((category) => (
-                  <div key={category.title}>
+                {restaurant.menuCategories?.map((category) => (
+                  <div key={category.id}>
                     <h2 className="text-xl font-heading font-black text-navy mb-4 flex items-center gap-2">
-                      <span className={`w-3 h-3 rounded-full ${category.color}`} />
-                      {category.title}
+                       <span className={`w-3 h-3 rounded-full bg-primary/40`} />
+                      {category.name}
                     </h2>
                     <div className="space-y-3">
-                      {category.products.map((product) => (
+                      {category.items.map((product) => (
                         <div key={product.id} className="bg-white rounded-2xl border border-gray-100 p-4 flex gap-3">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={product.image} alt={product.name} className="w-20 h-20 object-cover rounded-xl flex-shrink-0" />
+                         {product.imageUrl ? (
+                           // eslint-disable-next-line @next/next/no-img-element
+                           <img src={product.imageUrl} alt={product.name} className="w-20 h-20 object-cover rounded-xl flex-shrink-0" />
+                         ) : (
+                           <div className="w-20 h-20 bg-gray-100 rounded-xl flex-shrink-0 flex items-center justify-center text-2xl">🍔</div>
+                         )}
                           <div className="flex-1 min-w-0">
                             <p className="font-bold text-navy text-sm">{product.name}</p>
-                            <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{product.description}</p>
+                            {product.description && (
+                              <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{product.description}</p>
+                            )}
                             <div className="flex items-center justify-between mt-2">
-                              <span className="font-black text-navy">Rs.{product.price.toFixed(2)}</span>
+                              <span className="font-black text-navy">Rs.{product.price}</span>
                               <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleAdd(product)} className="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center">
                                 <Plus size={16} />
                               </motion.button>
@@ -429,7 +488,7 @@ export default function RestaurantDetailPage() {
         <DeliveryInfo />
         <MapSection />
         <Reviews />
-        <SimilarRestaurants currentId={id} />
+        <SimilarRestaurants currentId={slug} />
       </main>
 
       {/* Mobile Sticky Checkout Bar */}
