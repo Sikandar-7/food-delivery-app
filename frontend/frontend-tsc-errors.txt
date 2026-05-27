@@ -1,0 +1,4 @@
+components/Navbar.tsx(207,26): error TS2339: Property 'avatar' does not exist on type 'User'.
+components/Navbar.tsx(209,64): error TS2339: Property 'name' does not exist on type 'User'.
+components/Navbar.tsx(223,65): error TS2339: Property 'name' does not exist on type 'User'.
+components/Navbar.tsx(297,65): error TS2339: Property 'name' does not exist on type 'User'.

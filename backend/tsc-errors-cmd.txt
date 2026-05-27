@@ -1,0 +1,14 @@
+src/routes/admin.routes.ts(104,16): error TS2322: Type 'string | string[]' is not assignable to type 'string | undefined'.
+  Type 'string[]' is not assignable to type 'string'.
+src/routes/admin.routes.ts(117,16): error TS2322: Type 'string | string[]' is not assignable to type 'string | undefined'.
+  Type 'string[]' is not assignable to type 'string'.
+src/routes/order.routes.ts(93,16): error TS2322: Type 'string | string[]' is not assignable to type 'string | undefined'.
+  Type 'string[]' is not assignable to type 'string'.
+src/routes/order.routes.ts(114,16): error TS2322: Type 'string | string[]' is not assignable to type 'string | undefined'.
+  Type 'string[]' is not assignable to type 'string'.
+src/routes/restaurant.routes.ts(46,16): error TS2322: Type 'string | string[]' is not assignable to type 'string | undefined'.
+  Type 'string[]' is not assignable to type 'string'.
+src/routes/restaurant.routes.ts(78,16): error TS2322: Type 'string | string[]' is not assignable to type 'string | StringFilter<"Review"> | undefined'.
+  Type 'string[]' is not assignable to type 'string | StringFilter<"Review"> | undefined'.
+src/routes/restaurant.routes.ts(94,16): error TS2322: Type 'string | string[]' is not assignable to type 'string | undefined'.
+  Type 'string[]' is not assignable to type 'string'.

@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ShoppingBasket, MapPin, User, Menu, X, Search, LogOut, ChevronDown, Package } from "lucide-react";
+import { ShoppingBasket, MapPin, User, Menu, X, Search, LogOut, ChevronDown, Package, Store, Bike, ShieldAlert } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { useSearch } from "@/context/SearchContext";
@@ -223,6 +223,36 @@ export default function Navbar() {
                       <p className="font-bold text-navy">{user?.fullName}</p>
                       <p className="text-xs text-gray-500 truncate">{user?.email}</p>
                     </div>
+                    {user?.role === 'SUPER_ADMIN' && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setShowUserMenu(false)}
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition text-navy font-medium text-sm border-b border-gray-100"
+                      >
+                        <ShieldAlert size={16} className="text-primary" />
+                        Admin Dashboard
+                      </Link>
+                    )}
+                    {user?.role === 'RESTAURANT_OWNER' && (
+                      <Link
+                        href="/restaurant-panel/dashboard"
+                        onClick={() => setShowUserMenu(false)}
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition text-navy font-medium text-sm border-b border-gray-100"
+                      >
+                        <Store size={16} className="text-primary" />
+                        Manage Restaurant
+                      </Link>
+                    )}
+                    {user?.role === 'RIDER' && (
+                      <Link
+                        href="/rider"
+                        onClick={() => setShowUserMenu(false)}
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition text-navy font-medium text-sm border-b border-gray-100"
+                      >
+                        <Bike size={16} className="text-primary" />
+                        Rider Dashboard
+                      </Link>
+                    )}
                     <Link
                       href="/track"
                       onClick={() => setShowUserMenu(false)}
@@ -292,12 +322,50 @@ export default function Navbar() {
               ))}
               <div className="border-t border-gray-100 pt-3 mt-3">
                 {isLoggedIn ? (
-                  <div className="flex items-center justify-between px-4 py-2">
-                    <div>
+                  <div className="flex flex-col gap-2 px-4 py-2">
+                    <div className="mb-2">
                       <p className="font-bold text-navy">{user?.fullName}</p>
                       <p className="text-xs text-gray-500">{user?.email}</p>
                     </div>
-                    <button onClick={logout} className="text-error font-medium text-sm flex items-center gap-1">
+                    {user?.role === 'SUPER_ADMIN' && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 py-2 font-bold text-navy text-sm border-b border-gray-100"
+                      >
+                        <ShieldAlert size={18} className="text-primary" />
+                        Admin Dashboard
+                      </Link>
+                    )}
+                    {user?.role === 'RESTAURANT_OWNER' && (
+                      <Link
+                        href="/restaurant-panel/dashboard"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 py-2 font-bold text-navy text-sm border-b border-gray-100"
+                      >
+                        <Store size={18} className="text-primary" />
+                        Manage Restaurant
+                      </Link>
+                    )}
+                    {user?.role === 'RIDER' && (
+                      <Link
+                        href="/rider"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 py-2 font-bold text-navy text-sm border-b border-gray-100"
+                      >
+                        <Bike size={18} className="text-primary" />
+                        Rider Dashboard
+                      </Link>
+                    )}
+                    <Link
+                      href="/track"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 py-2 font-bold text-navy text-sm border-b border-gray-100"
+                    >
+                      <Package size={18} />
+                      My Orders
+                    </Link>
+                    <button onClick={logout} className="text-error font-medium text-sm flex items-center gap-1 mt-2">
                       <LogOut size={16} /> Logout
                     </button>
                   </div>

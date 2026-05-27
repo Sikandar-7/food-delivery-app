@@ -150,9 +150,13 @@ export function AuthModal() {
           </button>
         </p>
 
-        <p className="text-center text-xs text-gray-400">
-          Demo Customer: customer@test.com / Test@123
-        </p>
+          <div className="mt-6 p-4 bg-gray-50 rounded-xl text-center text-xs text-gray-500">
+            <p className="font-bold text-navy mb-1">Demo Accounts:</p>
+            <p>Admin: <span className="font-mono text-primary font-bold">admin@order.pk</span> | Pass: <span className="font-mono font-bold">Admin@123</span></p>
+            <p>Owner: <span className="font-mono text-primary font-bold">owner@mcdonalds.pk</span> | Pass: <span className="font-mono font-bold">Owner@123</span></p>
+            <p>Rider: <span className="font-mono text-primary font-bold">rider@order.pk</span> | Pass: <span className="font-mono font-bold">Rider@123</span></p>
+            <p>Customer: <span className="font-mono text-primary font-bold">customer@test.com</span> | Pass: <span className="font-mono font-bold">Test@123</span></p>
+          </div>
       </form>
     </div>
   );

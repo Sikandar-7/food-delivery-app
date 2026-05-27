@@ -1,0 +1,256 @@
+﻿
+> order-uk@0.1.0 build
+> next build
+
+  Γû▓ Next.js 14.2.5
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+node.exe :  ΓÜá Compiled with warnings
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpeci 
+   fied: ( ΓÜá Compiled with warnings  
+  :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCo 
+   mmandError
+ 
+
+./components/restaurant-panel/Restauran
+tSidebar.tsx
+Attempted import error: 'api' is not 
+exported from '@/lib/api' (imported as 
+'api').
+
+Import trace for requested module:
+./components/restaurant-panel/Restauran
+tSidebar.tsx
+./app/restaurant-panel/layout.tsx
+
+./components/restaurant-panel/Restauran
+tSidebar.tsx
+Attempted import error: 'api' is not 
+exported from '@/lib/api' (imported as 
+'api').
+
+Import trace for requested module:
+./components/restaurant-panel/Restauran
+tSidebar.tsx
+./app/restaurant-panel/layout.tsx
+
+ ΓÜá Compiled with warnings
+
+./components/restaurant-panel/Restauran
+tSidebar.tsx
+Attempted import error: 'api' is not 
+exported from '@/lib/api' (imported as 
+'api').
+
+Import trace for requested module:
+./components/restaurant-panel/Restauran
+tSidebar.tsx
+./app/restaurant-panel/layout.tsx
+
+./components/restaurant-panel/Restauran
+tSidebar.tsx
+Attempted import error: 'api' is not 
+exported from '@/lib/api' (imported as 
+'api').
+
+Import trace for requested module:
+./components/restaurant-panel/Restauran
+tSidebar.tsx
+./app/restaurant-panel/layout.tsx
+
+ Γ£ô Compiled successfully
+   Linting and checking validity of types ...
+
+Failed to compile.
+
+./app/restaurant-panel/analytics/page.t
+sx
+42:6  Warning: React Hook useEffect 
+has a missing dependency: 'loadData'. 
+Either include it or remove the 
+dependency array.  
+react-hooks/exhaustive-deps
+
+./app/restaurant-panel/dashboard/page.t
+sx
+34:6  Warning: React Hook useEffect 
+has a missing dependency: 
+'loadOrders'. Either include it or 
+remove the dependency array.  
+react-hooks/exhaustive-deps
+113:50  Warning: Using `<img>` could 
+result in slower LCP and higher 
+bandwidth. Consider using `<Image />` 
+from `next/image` to automatically 
+optimize images. This may incur 
+additional usage or cost from your 
+provider. See: https://nextjs.org/docs/
+messages/no-img-element  
+@next/next/no-img-element
+113:50  Warning: img elements must 
+have an alt prop, either with 
+meaningful text, or an empty string 
+for decorative images.  
+jsx-a11y/alt-text
+
+./app/restaurant-panel/menu/page.tsx
+48:6  Warning: React Hook useEffect 
+has a missing dependency: 'loadMenu'. 
+Either include it or remove the 
+dependency array.  
+react-hooks/exhaustive-deps
+165:70  Error: `"` can be escaped with 
+`&quot;`, `&ldquo;`, `&#34;`, 
+`&rdquo;`.  react/no-unescaped-entities
+165:78  Error: `"` can be escaped with 
+`&quot;`, `&ldquo;`, `&#34;`, 
+`&rdquo;`.  react/no-unescaped-entities
+165:83  Error: `"` can be escaped with 
+`&quot;`, `&ldquo;`, `&#34;`, 
+`&rdquo;`.  react/no-unescaped-entities
+165:90  Error: `"` can be escaped with 
+`&quot;`, `&ldquo;`, `&#34;`, 
+`&rdquo;`.  react/no-unescaped-entities
+217:31  Warning: Using `<img>` could 
+result in slower LCP and higher 
+bandwidth. Consider using `<Image />` 
+from `next/image` to automatically 
+optimize images. This may incur 
+additional usage or cost from your 
+provider. See: https://nextjs.org/docs/
+messages/no-img-element  
+@next/next/no-img-element
+250:111  Error: `"` can be escaped 
+with `&quot;`, `&ldquo;`, `&#34;`, 
+`&rdquo;`.  react/no-unescaped-entities
+250:120  Error: `"` can be escaped 
+with `&quot;`, `&ldquo;`, `&#34;`, 
+`&rdquo;`.  react/no-unescaped-entities
+
+./app/restaurants/[id]/page.tsx
+293:33  Warning: Using `<img>` could 
+result in slower LCP and higher 
+bandwidth. Consider using `<Image />` 
+from `next/image` to automatically 
+optimize images. This may incur 
+additional usage or cost from your 
+provider. See: https://nextjs.org/docs/
+messages/no-img-element  
+@next/next/no-img-element
+
+./app/rider/page.tsx
+111:66  Error: `'` can be escaped with 
+`&apos;`, `&lsquo;`, `&#39;`, 
+`&rsquo;`.  react/no-unescaped-entities
+
+./components/Footer.tsx
+18:15  Warning: Using `<img>` could 
+result in slower LCP and higher 
+bandwidth. Consider using `<Image />` 
+from `next/image` to automatically 
+optimize images. This may incur 
+additional usage or cost from your 
+provider. See: https://nextjs.org/docs/
+messages/no-img-element  
+@next/next/no-img-element
+19:15  Warning: Using `<img>` could 
+result in slower LCP and higher 
+bandwidth. Consider using `<Image />` 
+from `next/image` to automatically 
+optimize images. This may incur 
+additional usage or cost from your 
+provider. See: https://nextjs.org/docs/
+messages/no-img-element  
+@next/next/no-img-element
+40:21  Error: `'` can be escaped with 
+`&apos;`, `&lsquo;`, `&#39;`, 
+`&rsquo;`.  react/no-unescaped-entities
+
+./components/home/AppDownload.tsx
+16:21  Warning: Using `<img>` could 
+result in slower LCP and higher 
+bandwidth. Consider using `<Image />` 
+from `next/image` to automatically 
+optimize images. This may incur 
+additional usage or cost from your 
+provider. See: https://nextjs.org/docs/
+messages/no-img-element  
+@next/next/no-img-element
+24:21  Warning: Using `<img>` could 
+result in slower LCP and higher 
+bandwidth. Consider using `<Image />` 
+from `next/image` to automatically 
+optimize images. This may incur 
+additional usage or cost from your 
+provider. See: https://nextjs.org/docs/
+messages/no-img-element  
+@next/next/no-img-element
+25:21  Warning: Using `<img>` could 
+result in slower LCP and higher 
+bandwidth. Consider using `<Image />` 
+from `next/image` to automatically 
+optimize images. This may incur 
+additional usage or cost from your 
+provider. See: https://nextjs.org/docs/
+messages/no-img-element  
+@next/next/no-img-element
+
+./components/home/Hero.tsx
+81:18  Warning: Using `<img>` could 
+result in slower LCP and higher 
+bandwidth. Consider using `<Image />` 
+from `next/image` to automatically 
+optimize images. This may incur 
+additional usage or cost from your 
+provider. See: https://nextjs.org/docs/
+messages/no-img-element  
+@next/next/no-img-element
+
+./components/modals/CheckoutModal.tsx
+217:65  Error: `'` can be escaped with 
+`&apos;`, `&lsquo;`, `&#39;`, 
+`&rsquo;`.  react/no-unescaped-entities
+
+./components/restaurant-detail/SimilarR
+estaurants.tsx
+30:21  Warning: Using `<img>` could 
+result in slower LCP and higher 
+bandwidth. Consider using `<Image />` 
+from `next/image` to automatically 
+optimize images. This may incur 
+additional usage or cost from your 
+provider. See: https://nextjs.org/docs/
+messages/no-img-element  
+@next/next/no-img-element
+
+./components/restaurant-panel/Restauran
+tHeader.tsx
+39:13  Warning: Using `<img>` could 
+result in slower LCP and higher 
+bandwidth. Consider using `<Image />` 
+from `next/image` to automatically 
+optimize images. This may incur 
+additional usage or cost from your 
+provider. See: https://nextjs.org/docs/
+messages/no-img-element  
+@next/next/no-img-element
+
+./components/restaurant-panel/Restauran
+tSidebar.tsx
+40:6  Warning: React Hook useEffect 
+has a missing dependency: 
+'loadStatus'. Either include it or 
+remove the dependency array.  
+react-hooks/exhaustive-deps
+
+info  - Need to disable some ESLint 
+rules? Learn more here: https://nextjs.
+org/docs/basic-features/eslint#disablin
+g-rules

@@ -8,6 +8,29 @@ import {
   Store, 
   Bike 
 } from "lucide-react";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
 
 interface AdminStats {
   totalOrdersToday: number;
@@ -16,6 +39,7 @@ interface AdminStats {
   pendingApprovals: number;
   totalUsers: number;
   activeRiders: number;
+  revenueChart: { day: string; revenue: number }[];
 }
 
 export default function AdminDashboard() {
@@ -99,32 +123,53 @@ export default function AdminDashboard() {
         })}
       </div>
 
-      {/* Chart Placeholder */}
+      {/* Revenue Chart */}
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-50">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-bold font-heading text-navy">Revenue Overview</h3>
-          <select className="bg-gray-50 border border-gray-200 text-sm rounded-lg px-3 py-1 outline-none">
-            <option>This Week</option>
-            <option>This Month</option>
-            <option>This Year</option>
-          </select>
+          <h3 className="text-lg font-bold font-heading text-navy">Revenue Overview (Last 7 Days)</h3>
         </div>
         
-        <div className="h-64 w-full flex items-end justify-between gap-2 px-4 pb-4 border-b border-gray-100 relative">
-          {/* Simple CSS Bar Chart Mockup */}
-          {Array.from({ length: 7 }).map((_, i) => {
-            const height = Math.floor(Math.random() * 80) + 20; // 20% to 100%
-            const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-            return (
-              <div key={i} className="w-full flex justify-center group relative">
-                <div 
-                  className="w-full max-w-[40px] bg-primary/20 group-hover:bg-primary transition-colors rounded-t-sm"
-                  style={{ height: `${height}%` }}
-                ></div>
-                <span className="absolute -bottom-6 text-xs text-gray-400 font-medium">{days[i]}</span>
-              </div>
-            );
-          })}
+        <div className="w-full h-72">
+          {stats.revenueChart && stats.revenueChart.length > 0 ? (
+            <Line 
+              data={{
+                labels: stats.revenueChart.map(point => point.day),
+                datasets: [
+                  {
+                    label: 'Revenue (Rs.)',
+                    data: stats.revenueChart.map(point => point.revenue),
+                    borderColor: '#fc8a06',
+                    backgroundColor: 'rgba(252, 138, 6, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#fc8a06',
+                  }
+                ]
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: { display: false }
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    grid: { color: '#f3f4f6' },
+                    ticks: { callback: (value) => `Rs. ${value}` }
+                  },
+                  x: {
+                    grid: { display: false }
+                  }
+                }
+              }}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-400">
+              No revenue data available.
+            </div>
+          )}
         </div>
       </div>
     </div>

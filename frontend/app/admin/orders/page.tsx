@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
+import Link from "next/link";
 import { Eye } from "lucide-react";
 
 interface Order {
@@ -92,9 +93,9 @@ export default function AdminOrdersPage() {
                   </span>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <button className="text-gray-400 hover:text-primary transition p-2">
+                  <Link href={`/admin/orders/${order.id}`} className="text-gray-400 hover:text-primary transition p-2 inline-block">
                     <Eye size={18} />
-                  </button>
+                  </Link>
                 </td>
               </tr>
             ))}

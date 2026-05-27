@@ -37,7 +37,7 @@ export default function Footer() {
               </button>
             </div>
             <p className="text-xs text-gray-500 pt-1">
-              we won't spam, read our <Link href="#" className="underline">email policy</Link>
+              we won&apos;t spam, read our <Link href="#" className="underline">email policy</Link>
             </p>
             <div className="flex gap-4 pt-4">
               <a href="#" className="text-navy hover:text-primary transition-colors"><Facebook size={24} /></a>

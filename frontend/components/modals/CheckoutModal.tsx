@@ -214,7 +214,7 @@ export function CheckoutModal() {
           >
             <div className="w-16 h-16 border-4 border-gray-100 border-t-primary rounded-full animate-spin mb-6"></div>
             <h3 className="text-xl font-bold text-navy">Processing Payment...</h3>
-            <p className="text-sm text-gray-500 mt-2">Please don't close this window</p>
+            <p className="text-sm text-gray-500 mt-2">Please don&apos;t close this window</p>
           </motion.div>
         ) : (
           <motion.div
