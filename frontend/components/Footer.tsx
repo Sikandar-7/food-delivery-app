@@ -19,7 +19,7 @@ export default function Footer() {
               <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" className="h-[40px] cursor-pointer" />
             </div>
             <p className="text-sm text-gray-600 max-w-xs mt-4">
-              Company # 490039-445, Registered with House of companies.
+              Order.pk — Pakistan&apos;s food delivery marketplace. Serving Lahore, Karachi &amp; Islamabad.
             </p>
           </div>
 
@@ -74,7 +74,7 @@ export default function Footer() {
       {/* Bottom Legal Bar */}
       <div className="bg-navy text-white text-xs md:text-sm py-4 w-full">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p>Order.pk Copyright 2024, All Rights Reserved.</p>
+          <p>Order.pk Copyright 2026, All Rights Reserved.</p>
           <div className="flex flex-wrap justify-center gap-4 md:gap-8">
             <Link href="#" className="hover:text-primary transition-colors">Privacy Policy</Link>
             <Link href="#" className="hover:text-primary transition-colors">Terms</Link>

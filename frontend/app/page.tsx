@@ -14,7 +14,7 @@ export default function Home() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-grow">
+      <main id="main-content" className="flex-grow">
         <Hero />
         <ExclusiveDeals />
         <PopularCategories />

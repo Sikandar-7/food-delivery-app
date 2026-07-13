@@ -1,5 +1,5 @@
 // ============================================================
-// Order.uk – Central Data Store
+// Order.pk – Central Data Store
 // ============================================================
 
 export interface Product {

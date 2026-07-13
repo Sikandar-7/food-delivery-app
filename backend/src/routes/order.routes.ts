@@ -1,55 +1,67 @@
 import { Router, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 import { authMiddleware, roleGuard, AuthRequest } from '../middleware/auth.middleware';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // ─── POST /api/orders (Customer places order) ─────────────
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { restaurantId, items, deliveryAddress, paymentMethod, couponCode, orderType, specialInstructions } = req.body;
 
-    // Calculate order total
-    let subtotal = 0;
-    let discount = 0;
-    const orderItems: any[] = [];
-
-    for (const item of items) {
-      const menuItem = await prisma.menuItemSize.findFirst({
-        where: { menuItemId: item.menuItemId, sizeName: item.sizeName },
-      });
-      if (!menuItem) {
-        // fallback: use basePrice from parent menuItem
-        const parent = await prisma.menuItem.findUnique({ where: { id: item.menuItemId } });
-        if (!parent) continue;
-        const itemTotal = parent.basePrice * item.quantity;
-        subtotal += itemTotal;
-        orderItems.push({
-          menuItemId: item.menuItemId,
-          quantity: item.quantity,
-          sizeName: item.sizeName || 'Regular',
-          unitPrice: parent.basePrice,
-          customizations: item.customizations || [],
-          itemTotal,
-        });
-        continue;
-      }
-
-      const itemTotal = menuItem.price * item.quantity;
-      subtotal += itemTotal;
-      orderItems.push({
-        menuItemId: item.menuItemId,
-        quantity: item.quantity,
-        sizeName: item.sizeName,
-        unitPrice: menuItem.price,
-        customizations: item.customizations || [],
-        itemTotal,
-      });
+    if (!restaurantId || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ success: false, message: 'restaurantId and at least one item are required' });
     }
 
     const restaurant = await prisma.restaurant.findUnique({ where: { id: restaurantId } });
     if (!restaurant) return res.status(404).json({ success: false, message: 'Restaurant not found' });
+    if (!restaurant.isActive || !restaurant.isOpen) {
+      return res.status(400).json({ success: false, message: 'This restaurant is currently not accepting orders' });
+    }
+
+    // ── Build order items with SERVER-SIDE pricing (never trust client prices) ──
+    let subtotal = 0;
+    const orderItems: any[] = [];
+
+    for (const item of items) {
+      const menuItem = await prisma.menuItem.findUnique({
+        where: { id: item.menuItemId },
+        include: { sizes: true, toppingGroups: { include: { toppings: true } } },
+      });
+      if (!menuItem) {
+        return res.status(400).json({ success: false, message: `Menu item not found: ${item.menuItemId}` });
+      }
+      if (menuItem.restaurantId !== restaurantId) {
+        return res.status(400).json({ success: false, message: 'All items must belong to the selected restaurant' });
+      }
+      if (!menuItem.isAvailable) {
+        return res.status(400).json({ success: false, message: `${menuItem.name} is currently unavailable` });
+      }
+
+      // unit price from chosen size, else basePrice — sourced from DB
+      const size = item.sizeName ? menuItem.sizes.find((s) => s.sizeName === item.sizeName) : undefined;
+      const unitPrice = size ? size.price : menuItem.basePrice;
+
+      // toppings priced from DB by id (client only sends ids, never prices)
+      const requestedToppingIds: string[] = Array.isArray(item.toppingIds) ? item.toppingIds : [];
+      const selectedToppings = menuItem.toppingGroups
+        .flatMap((g) => g.toppings)
+        .filter((t) => requestedToppingIds.includes(t.id));
+      const toppingsSurcharge = selectedToppings.reduce((sum, t) => sum + (t.isFree ? 0 : t.extraPrice), 0);
+
+      const quantity = Math.max(1, Number(item.quantity) || 1);
+      const itemTotal = (unitPrice + toppingsSurcharge) * quantity;
+      subtotal += itemTotal;
+
+      orderItems.push({
+        menuItemId: menuItem.id,
+        quantity,
+        sizeName: item.sizeName || 'Regular',
+        unitPrice,
+        customizations: selectedToppings.map((t) => ({ id: t.id, name: t.name, extraPrice: t.isFree ? 0 : t.extraPrice })),
+        itemTotal,
+      });
+    }
 
     // Validate minimum order
     if (subtotal < restaurant.minOrderValue) {
@@ -59,53 +71,84 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Apply coupon
+    // ── Coupon validation + FULL enforcement (server-side) ──
+    let discount = 0;
+    let appliedCouponId: string | null = null;
+    let normalizedCouponCode: string | null = null;
     if (couponCode) {
-      const coupon = await prisma.coupon.findUnique({ where: { code: couponCode } });
-      if (coupon && coupon.isActive && new Date() >= coupon.validFrom && new Date() <= coupon.validTo) {
-        if (subtotal >= coupon.minOrderValue) {
-          if (coupon.type === 'PERCENTAGE') {
-            discount = Math.min(subtotal * coupon.discountValue / 100, coupon.maxDiscount || Infinity);
-          } else if (coupon.type === 'FIXED_AMOUNT') {
-            discount = coupon.discountValue;
-          } else if (coupon.type === 'FREE_DELIVERY') {
-            discount = restaurant.deliveryFee;
-          }
+      const code = String(couponCode).toUpperCase();
+      const coupon = await prisma.coupon.findUnique({ where: { code } });
+      const now = new Date();
+      if (!coupon || !coupon.isActive || now < coupon.validFrom || now > coupon.validTo) {
+        return res.status(400).json({ success: false, message: 'Invalid or expired coupon' });
+      }
+      if (coupon.restaurantId && coupon.restaurantId !== restaurantId) {
+        return res.status(400).json({ success: false, message: 'Coupon is not valid for this restaurant' });
+      }
+      if (subtotal < coupon.minOrderValue) {
+        return res.status(400).json({ success: false, message: `Coupon requires a minimum order of Rs.${coupon.minOrderValue}` });
+      }
+      if (coupon.totalUsageLimit != null && coupon.timesUsed >= coupon.totalUsageLimit) {
+        return res.status(400).json({ success: false, message: 'This coupon has reached its usage limit' });
+      }
+      const userUses = await prisma.order.count({ where: { customerId: req.user!.id, couponCode: code } });
+      if (userUses >= coupon.usageLimitPerUser) {
+        return res.status(400).json({ success: false, message: 'You have already used this coupon' });
+      }
+      if (coupon.firstOrderOnly) {
+        const priorOrders = await prisma.order.count({ where: { customerId: req.user!.id } });
+        if (priorOrders > 0) {
+          return res.status(400).json({ success: false, message: 'This coupon is valid on your first order only' });
         }
       }
+      if (coupon.type === 'PERCENTAGE') {
+        discount = Math.min((subtotal * coupon.discountValue) / 100, coupon.maxDiscount ?? Infinity);
+      } else if (coupon.type === 'FIXED_AMOUNT') {
+        discount = Math.min(coupon.discountValue, subtotal);
+      } else if (coupon.type === 'FREE_DELIVERY') {
+        discount = restaurant.deliveryFee;
+      }
+      appliedCouponId = coupon.id;
+      normalizedCouponCode = code;
     }
 
-    const deliveryFee = orderType === 'DELIVERY' ? restaurant.deliveryFee : 0;
-    const total = subtotal - discount + deliveryFee;
+    const deliveryFee = orderType === 'COLLECTION' ? 0 : restaurant.deliveryFee;
+    const total = Math.max(0, subtotal - discount + deliveryFee);
 
-    // Generate unique order number
-    const orderCount = await prisma.order.count();
-    const orderNumber = `ORD-${new Date().getFullYear()}-${String(orderCount + 1).padStart(4, '0')}`;
+    // Race-free order number (timestamp + random suffix instead of count()+1)
+    const orderNumber = `ORD-${new Date().getFullYear()}-${Date.now().toString().slice(-7)}${Math.random().toString(36).slice(2, 5).toUpperCase()}`;
 
-    const order = await prisma.order.create({
-      data: {
-        orderNumber,
-        customerId: req.user!.id,
-        restaurantId,
-        status: 'PENDING',
-        orderType: orderType || 'DELIVERY',
-        subtotal,
-        discountAmount: discount,
-        deliveryFee,
-        total,
-        paymentMethod: paymentMethod || 'CASH',
-        paymentStatus: 'PENDING',
-        deliveryAddress,
-        couponCode,
-        specialInstructions,
-        items: { create: orderItems },
-      },
-      include: { items: true, restaurant: { select: { name: true, logoUrl: true } } },
+    // Atomic: create order (+ items) and bump coupon usage together
+    const order = await prisma.$transaction(async (tx) => {
+      const created = await tx.order.create({
+        data: {
+          orderNumber,
+          customerId: req.user!.id,
+          restaurantId,
+          status: 'PENDING',
+          orderType: orderType || 'DELIVERY',
+          subtotal,
+          discountAmount: discount,
+          deliveryFee,
+          total,
+          paymentMethod: paymentMethod || 'CASH',
+          paymentStatus: 'PENDING',
+          deliveryAddress,
+          couponCode: normalizedCouponCode,
+          specialInstructions,
+          items: { create: orderItems },
+        },
+        include: { items: true, restaurant: { select: { name: true, logoUrl: true } } },
+      });
+      if (appliedCouponId) {
+        await tx.coupon.update({ where: { id: appliedCouponId }, data: { timesUsed: { increment: 1 } } });
+      }
+      return created;
     });
 
     return res.status(201).json({ success: true, message: 'Order placed successfully!', data: order });
   } catch (err) {
-    console.error(err);
+    console.error('Create order error:', err);
     return res.status(500).json({ success: false, message: 'Server error' });
   }
 });
@@ -139,7 +182,7 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     const order = await prisma.order.findUnique({
       where: { id: req.params.id as string },
       include: {
-        restaurant: { select: { name: true, logoUrl: true, phone: true, addressLine1: true } },
+        restaurant: { select: { name: true, logoUrl: true, phone: true, addressLine1: true, ownerId: true } },
         customer: { select: { fullName: true, phone: true } },
         items: { include: { menuItem: { select: { name: true, imageUrl: true } } } },
         rider: { include: { user: { select: { fullName: true, phone: true } } } },
@@ -147,6 +190,18 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     });
 
     if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+
+    // ── Access control: only the customer, the restaurant owner, the assigned rider, or an admin ──
+    const u = req.user!;
+    let allowed = u.role === 'SUPER_ADMIN' || order.customerId === u.id || order.restaurant.ownerId === u.id;
+    if (!allowed && u.role === 'RIDER') {
+      const rider = await prisma.rider.findUnique({ where: { userId: u.id }, select: { id: true } });
+      allowed = !!rider && order.riderId === rider.id;
+    }
+    if (!allowed) {
+      return res.status(403).json({ success: false, message: 'You do not have access to this order' });
+    }
+
     return res.json({ success: true, data: order });
   } catch (err) {
     return res.status(500).json({ success: false, message: 'Server error' });
@@ -160,6 +215,16 @@ router.put('/:id/status', authMiddleware, roleGuard('RESTAURANT_OWNER', 'SUPER_A
     const validStatuses = ['PENDING', 'ACCEPTED', 'PREPARING', 'READY', 'ON_THE_WAY', 'DELIVERED', 'CANCELLED'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ success: false, message: 'Invalid order status' });
+    }
+
+    // ── A restaurant owner may only touch orders for their OWN restaurant ──
+    const existing = await prisma.order.findUnique({
+      where: { id: req.params.id as string },
+      select: { restaurant: { select: { ownerId: true } } },
+    });
+    if (!existing) return res.status(404).json({ success: false, message: 'Order not found' });
+    if (req.user!.role === 'RESTAURANT_OWNER' && existing.restaurant.ownerId !== req.user!.id) {
+      return res.status(403).json({ success: false, message: 'This order does not belong to your restaurant' });
     }
 
     const order = await prisma.order.update({
@@ -201,6 +266,10 @@ router.post('/:id/cancel', authMiddleware, async (req: AuthRequest, res: Respons
   try {
     const order = await prisma.order.findUnique({ where: { id: req.params.id as string } });
     if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+    // Only the owning customer (or an admin) may cancel
+    if (order.customerId !== req.user!.id && req.user!.role !== 'SUPER_ADMIN') {
+      return res.status(403).json({ success: false, message: 'You cannot cancel this order' });
+    }
     // Only allow cancel if PENDING or ACCEPTED
     if (!['PENDING', 'ACCEPTED'].includes(order.status)) {
       return res.status(400).json({ success: false, message: 'Order cannot be cancelled at this stage' });

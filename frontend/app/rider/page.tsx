@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
 import { MapPin, Navigation, PhoneCall, CheckCircle2, AlertTriangle, ShieldCheck, Bike } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
 export default function RiderDashboard() {
   const [isOnline, setIsOnline] = useState(false);

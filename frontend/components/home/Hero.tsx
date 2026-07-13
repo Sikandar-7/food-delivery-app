@@ -42,7 +42,7 @@ export default function Hero() {
                 <div className="flex-grow bg-white rounded-t-pill sm:rounded-t-none sm:rounded-l-pill border border-gray-300 px-6 py-4">
                   <input 
                     type="text" 
-                    placeholder="e.g. EC4R 3TE" 
+                    placeholder="e.g. 54000 (Lahore)"
                     value={postcode}
                     onChange={(e) => setPostcode(e.target.value.toUpperCase())}
                     onKeyDown={handleKeyDown}

@@ -17,7 +17,7 @@ export function DetailHeader() {
                       <p className="text-sm font-medium tracking-wider mb-2 text-gray-300">I&apos;m lovin&apos; it!</p>
                       <h1 className="text-4xl md:text-5xl font-heading font-bold mb-4">McDonald&apos;s Gulberg Lahore</h1>
                       <div className="flex flex-wrap items-center gap-4 text-sm font-medium">
-                          <span className="flex items-center gap-1 border border-white/20 rounded-pill px-3 py-1"><CheckSquare size={16} className="text-success" /> Minimum Order: 15 GBP</span>
+                          <span className="flex items-center gap-1 border border-white/20 rounded-pill px-3 py-1"><CheckSquare size={16} className="text-success" /> Minimum Order: Rs.500</span>
                           <span className="flex items-center gap-1 border border-white/20 rounded-pill px-3 py-1"><MapPin size={16} className="text-primary" /> Delivery in 20-25 Minutes</span>
                       </div>
                   </div>

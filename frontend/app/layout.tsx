@@ -29,6 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} ${poppins.variable} font-sans`}>
+        <a href="#main-content" className="skip-link">Skip to content</a>
         <Providers>
           {children}
         </Providers>

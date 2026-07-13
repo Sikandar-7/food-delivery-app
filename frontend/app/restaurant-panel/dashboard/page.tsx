@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { Check, X, Clock, ChefHat, ShoppingBag, PhoneCall, MapPin } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
 type Order = {
   id: string;

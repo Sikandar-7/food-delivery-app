@@ -1,1 +1,0 @@
-﻿src/routes/rider.routes.ts(48,58): error TS2322: Type '"OUT_FOR_DELIVERY"' is not assignable to type 'OrderStatus'.

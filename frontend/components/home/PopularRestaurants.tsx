@@ -5,6 +5,7 @@ import api from "@/lib/api";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { SlideUp } from "@/components/animations/MotionWrappers";
+import { restaurants as mockRestaurants } from "@/lib/data";
 
 interface ApiRestaurant {
   id: string;
@@ -14,6 +15,15 @@ interface ApiRestaurant {
   deliveryTimeMins: number;
 }
 
+// Fallback so the homepage never renders an empty section when the API is unavailable
+const fallbackRestaurants: ApiRestaurant[] = mockRestaurants.slice(0, 6).map((r) => ({
+  id: r.id,
+  name: r.name,
+  slug: r.id,
+  logoUrl: r.logo ?? null,
+  deliveryTimeMins: parseInt(String(r.deliveryTime).replace(/\D/g, ""), 10) || 30,
+}));
+
 export default function PopularRestaurants() {
   const [restaurants, setRestaurants] = useState<ApiRestaurant[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,12 +32,15 @@ export default function PopularRestaurants() {
     const fetchPopular = async () => {
       try {
         const res = await api.get('/restaurants');
-        if (res.data.success) {
+        if (res.data.success && res.data.data.length > 0) {
           // just taking the first 6 for the homepage for now
           setRestaurants(res.data.data.slice(0, 6));
+        } else {
+          setRestaurants(fallbackRestaurants);
         }
       } catch (err) {
-        console.error("Failed to fetch popular restaurants", err);
+        console.error("Failed to fetch popular restaurants, using fallback", err);
+        setRestaurants(fallbackRestaurants);
       } finally {
         setLoading(false);
       }

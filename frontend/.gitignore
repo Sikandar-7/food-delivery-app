@@ -34,3 +34,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# dev logs / typecheck dumps
+*.log
+*_utf8*
+tsc-errors*.txt
+build_err*.log
+eslint-report.json

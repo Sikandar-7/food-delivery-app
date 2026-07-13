@@ -1,11 +1,14 @@
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
+import crypto from 'crypto';
+import { prisma } from '../lib/prisma';
 import { z } from 'zod';
 
 const router = Router();
-const prisma = new PrismaClient();
+
+// Store only a hash of the refresh token — a DB leak must not hand over live sessions
+const hashToken = (t: string) => crypto.createHash('sha256').update(t).digest('hex');
 
 // ─── Validation Schemas ───────────────────────────────────
 const registerSchema = z.object({
@@ -61,7 +64,7 @@ router.post('/register', async (req: Request, res: Response) => {
     // Save refresh token
     await prisma.refreshToken.create({
       data: {
-        token: refreshToken,
+        token: hashToken(refreshToken),
         userId: user.id,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       },
@@ -103,7 +106,7 @@ router.post('/login', async (req: Request, res: Response) => {
     
     await prisma.refreshToken.create({
       data: {
-        token: refreshToken,
+        token: hashToken(refreshToken),
         userId: user.id,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       },
@@ -133,7 +136,7 @@ router.post('/refresh', async (req: Request, res: Response) => {
     }
 
     const storedToken = await prisma.refreshToken.findUnique({
-      where: { token: refreshToken },
+      where: { token: hashToken(refreshToken) },
       include: { user: { select: { id: true, email: true, role: true, isActive: true } } },
     });
 
@@ -149,10 +152,10 @@ router.post('/refresh', async (req: Request, res: Response) => {
     });
 
     // Rotate refresh token
-    await prisma.refreshToken.delete({ where: { token: refreshToken } });
+    await prisma.refreshToken.delete({ where: { token: hashToken(refreshToken) } });
     await prisma.refreshToken.create({
       data: {
-        token: newRefreshToken,
+        token: hashToken(newRefreshToken),
         userId: decoded.id,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       },
@@ -168,7 +171,7 @@ router.post('/refresh', async (req: Request, res: Response) => {
 router.post('/logout', async (req: Request, res: Response) => {
   const { refreshToken } = req.body;
   if (refreshToken) {
-    await prisma.refreshToken.deleteMany({ where: { token: refreshToken } });
+    await prisma.refreshToken.deleteMany({ where: { token: hashToken(refreshToken) } });
   }
   return res.json({ success: true, message: 'Logged out successfully' });
 });

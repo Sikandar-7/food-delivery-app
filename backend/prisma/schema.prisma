@@ -85,6 +85,7 @@ model RefreshToken {
   expiresAt DateTime
   createdAt DateTime @default(now())
 
+  @@index([userId])
   @@map("refresh_tokens")
 }
 
@@ -149,6 +150,7 @@ model MenuCategory {
 
   items        MenuItem[]
 
+  @@index([restaurantId])
   @@map("menu_categories")
 }
 
@@ -171,6 +173,8 @@ model MenuItem {
   toppingGroups  ToppingGroup[]
   orderItems     OrderItem[]
 
+  @@index([restaurantId])
+  @@index([categoryId])
   @@map("menu_items")
 }
 
@@ -239,6 +243,11 @@ model Order {
 
   items                 OrderItem[]
 
+  @@index([customerId])
+  @@index([restaurantId])
+  @@index([riderId])
+  @@index([status])
+  @@index([createdAt])
   @@map("orders")
 }
 
@@ -254,6 +263,8 @@ model OrderItem {
   customizations Json     @default("[]")
   itemTotal      Float
 
+  @@index([orderId])
+  @@index([menuItemId])
   @@map("order_items")
 }
 
@@ -322,5 +333,7 @@ model Review {
   comment      String?
   createdAt    DateTime   @default(now())
 
+  @@index([restaurantId])
+  @@index([customerId])
   @@map("reviews")
 }

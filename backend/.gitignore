@@ -2,3 +2,10 @@ node_modules
 dist
 .env
 *.tsbuildinfo
+
+# dev logs / typecheck dumps
+*.log
+*_utf8*
+tsc-errors*.txt
+ts_errors*.txt
+eslint-report.json

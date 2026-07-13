@@ -76,7 +76,7 @@ export default function Navbar() {
             >
               <ShoppingBasket size={18} />
               <span className="font-medium text-sm">{state.items.length} Items</span>
-              <span className="font-bold text-sm">· GBP {state.total.toFixed(2)}</span>
+              <span className="font-bold text-sm">· Rs.{state.total.toFixed(2)}</span>
             </button>
           </div>
         </div>
@@ -203,8 +203,13 @@ export default function Navbar() {
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="hidden md:flex items-center gap-2 bg-navy text-white px-4 py-2 rounded-pill hover:bg-navy/90 transition font-medium"
               >
-                <div className="w-7 h-7 bg-primary rounded-full flex items-center justify-center font-bold text-sm">
-                  {user?.profilePhoto}
+                <div className="w-7 h-7 bg-primary text-white rounded-full flex items-center justify-center font-bold text-sm overflow-hidden">
+                  {user?.profilePhoto ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={user.profilePhoto} alt={user.fullName} className="w-full h-full object-cover" />
+                  ) : (
+                    user?.fullName?.charAt(0).toUpperCase()
+                  )}
                 </div>
                 <span className="max-w-[80px] truncate">{user?.fullName}</span>
                 <ChevronDown size={16} />

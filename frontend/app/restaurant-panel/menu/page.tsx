@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import api from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { Plus, Edit, Trash2, ChevronDown, ChevronRight, Image as ImageIcon, X } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type Category = {

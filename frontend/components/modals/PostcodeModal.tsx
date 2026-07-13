@@ -9,7 +9,8 @@ export function PostcodeModal() {
   const [state, setState] = useState<"DEFAULT" | "SUCCESS" | "ERROR">("DEFAULT");
 
   const handleCheck = () => {
-    if (postcode.trim() === "EC4R 3TE") {
+    // Demo: accept any valid Pakistani 5-digit postcode (e.g. Lahore 54000, Karachi 74000, Islamabad 44000)
+    if (/^\d{5}$/.test(postcode.trim())) {
       setState("SUCCESS");
       setTimeout(() => closeModal(), 2000);
     } else {
@@ -32,7 +33,7 @@ export function PostcodeModal() {
         <div className={`flex border rounded-xl overflow-hidden ${state === "ERROR" ? "border-error" : state === "SUCCESS" ? "border-success" : "border-gray-300"}`}>
             <input 
               type="text" 
-              placeholder="e.g. EC4R 3TE" 
+              placeholder="e.g. 54000"
               value={postcode}
               onChange={(e) => {
                   setPostcode(e.target.value.toUpperCase());
