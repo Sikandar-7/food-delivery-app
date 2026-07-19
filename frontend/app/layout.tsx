@@ -19,6 +19,9 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: "Order.pk | Feast Your Senses, Fast and Fresh",
   description: "Order Restaurant food, takeaway and groceries. Enter a postcode to see what we deliver.",
+  authors: [{ name: "Quantum Labs", url: "https://portfolio-five-black-18.vercel.app" }],
+  creator: "Quantum Labs",
+  publisher: "Quantum Labs",
 };
 
 export default function RootLayout({

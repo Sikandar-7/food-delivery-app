@@ -74,7 +74,21 @@ export default function Footer() {
       {/* Bottom Legal Bar */}
       <div className="bg-navy text-white text-xs md:text-sm py-4 w-full">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p>Order.pk Copyright 2026, All Rights Reserved.</p>
+          <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-3 text-center sm:text-left">
+            <p>Order.pk Copyright 2026, All Rights Reserved.</p>
+            <span className="hidden sm:inline text-white/30">|</span>
+            <p className="text-white/70">
+              Built by{" "}
+              <a
+                href="https://portfolio-five-black-18.vercel.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-bold text-primary tracking-wide hover:text-white transition-colors underline-offset-4 hover:underline"
+              >
+                Quantum Labs
+              </a>
+            </p>
+          </div>
           <div className="flex flex-wrap justify-center gap-4 md:gap-8">
             <Link href="#" className="hover:text-primary transition-colors">Privacy Policy</Link>
             <Link href="#" className="hover:text-primary transition-colors">Terms</Link>
