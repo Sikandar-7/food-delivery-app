@@ -24,15 +24,24 @@ const PORT = process.env.PORT || 5000;
 
 // ─── Middleware ───────────────────────────────────────────
 app.use(securityHeaders);
-const allowedOrigins = [process.env.FRONTEND_URL || 'http://localhost:3000'];
+// FRONTEND_URL may hold several comma-separated origins. Vercel serves a project
+// from more than one hostname (production alias + a -git-<branch>- preview alias),
+// and every one of them needs to be allowed or the browser blocks the request.
+const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:3000')
+  .split(',')
+  .map((o) => o.trim().replace(/\/$/, ''))
+  .filter(Boolean);
+
 app.use(cors({
   origin: (origin, cb) => {
     // allow non-browser clients (curl, server-to-server) with no Origin header
     if (!origin) return cb(null, true);
-    if (allowedOrigins.includes(origin)) return cb(null, true);
+    const clean = origin.replace(/\/$/, '');
+    if (allowedOrigins.includes(clean)) return cb(null, true);
     // in dev, allow any localhost port (3000, 3011, …) so previews just work
-    if (process.env.NODE_ENV !== 'production' && /^http:\/\/localhost:\d+$/.test(origin)) return cb(null, true);
-    return cb(new Error('Not allowed by CORS'));
+    if (process.env.NODE_ENV !== 'production' && /^http:\/\/localhost:\d+$/.test(clean)) return cb(null, true);
+    // Deny by omitting the CORS header — throwing here would surface as a 500
+    return cb(null, false);
   },
   credentials: true,
 }));
