@@ -64,6 +64,39 @@ app.use('/api/admin', adminRouter);
 app.use('/api/upload', uploadRouter);
 app.use('/api/rider', riderRouter);
 
+// ─── Public: All menu items (Browse Menu page) ────────────
+app.get('/api/menu', async (_req: express.Request, res: express.Response) => {
+  try {
+    const items = await prisma.menuItem.findMany({
+      where: { isAvailable: true, restaurant: { isActive: true } },
+      include: {
+        sizes: { orderBy: { price: 'asc' } },
+        category: { select: { name: true } },
+        restaurant: { select: { id: true, name: true, slug: true } },
+      },
+      orderBy: { displayOrder: 'asc' },
+    });
+
+    // Flatten into the shape the Browse Menu page renders
+    const data = items.map((i) => ({
+      id: i.id,
+      name: i.name,
+      description: i.description ?? '',
+      image: i.imageUrl,
+      price: i.sizes.length > 0 ? i.sizes[0].price : i.basePrice,
+      sizes: i.sizes.map((s) => ({ label: s.sizeName, price: s.price })),
+      categoryTitle: i.category.name,
+      restaurantId: i.restaurant.id,
+      restaurantName: i.restaurant.name,
+      restaurantSlug: i.restaurant.slug,
+    }));
+
+    return res.json({ success: true, data });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // ─── Public: Coupon Validate ──────────────────────────────
 app.get('/api/coupons/validate/:code', async (req: express.Request, res: express.Response) => {
   try {
