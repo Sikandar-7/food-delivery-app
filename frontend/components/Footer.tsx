@@ -80,12 +80,12 @@ export default function Footer() {
             <p className="text-white/70">
               Built by{" "}
               <a
-                href="https://portfolio-five-black-18.vercel.app"
+                href="https://buraqtech.uk"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-bold text-primary tracking-wide hover:text-white transition-colors underline-offset-4 hover:underline"
               >
-                Quantum Labs
+                Buraq Tech
               </a>
             </p>
           </div>
