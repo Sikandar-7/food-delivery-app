@@ -130,7 +130,16 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 });
 
 // ─── Start Server ─────────────────────────────────────────
-if (process.env.NODE_ENV !== 'production' && process.env.VERCEL !== '1') {
+// Listen unless the platform owns the HTTP layer. On Vercel the function
+// runtime imports `app` and handles sockets itself, so calling listen there is
+// wrong. Everywhere else — a container, a VPS, local dev — nothing binds the
+// port unless we do.
+//
+// This used to also require NODE_ENV !== 'production', which quietly made the
+// server unrunnable in any real deployment: with NODE_ENV=production set (as
+// every image does) the process would start, register its routes, bind nothing
+// and exit 0. No error, no log, just a container that "ran" and stopped.
+if (process.env.VERCEL !== '1') {
   app.listen(PORT, () => {
     console.log(`\n🚀 Order.pk API running on http://localhost:${PORT}`);
     console.log(`📦 Environment: ${process.env.NODE_ENV}`);
